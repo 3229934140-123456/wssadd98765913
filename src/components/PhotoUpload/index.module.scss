@@ -1,0 +1,81 @@
+@use '@/styles/variables.scss' as *;
+
+.photoUpload {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-md;
+  padding: $spacing-md 0;
+}
+
+.photoItem {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: $radius-md;
+  overflow: hidden;
+  position: relative;
+  background: $color-bg-hover;
+}
+
+.photoAdd {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: $radius-md;
+  border: 2rpx dashed $color-border;
+  background: $color-bg-card;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+.addIcon {
+  font-size: 56rpx;
+  color: $color-text-tertiary;
+  margin-bottom: 8rpx;
+  line-height: 1;
+}
+
+.addText {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.photoImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.removeBtn {
+  position: absolute;
+  top: 8rpx;
+  right: 8rpx;
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: $radius-round;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 24rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.photoLabel {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+  text-align: center;
+  @include text-ellipsis;
+}
+
+.photoGroup {
+  width: 200rpx;
+  display: flex;
+  flex-direction: column;
+}

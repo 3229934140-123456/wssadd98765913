@@ -1,0 +1,236 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 32rpx);
+}
+
+.scanSection {
+  padding: $spacing-lg $page-padding;
+  background: linear-gradient(180deg, $color-primary 0%, $color-primary-light 50%, $color-bg-page 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.scanTitle {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  color: $color-text-white;
+  margin-bottom: 8rpx;
+  margin-top: $spacing-sm;
+}
+
+.scanSubtitle {
+  font-size: $font-size-sm;
+  color: rgba(255, 255, 255, 0.85);
+  margin-bottom: $spacing-xl;
+}
+
+.scanBtn {
+  @include button-reset;
+  width: 360rpx;
+  height: 360rpx;
+  border-radius: $radius-xl;
+  background: $color-bg-card;
+  box-shadow: 0 8rpx 32rpx rgba(22, 119, 255, 0.3);
+  flex-direction: column;
+  margin-bottom: $spacing-lg;
+
+  &:active {
+    transform: scale(0.96);
+    opacity: 0.95;
+  }
+}
+
+.scanIcon {
+  font-size: 100rpx;
+  margin-bottom: $spacing-md;
+  line-height: 1;
+}
+
+.scanBtnText {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+}
+
+.scanHint {
+  font-size: $font-size-xs;
+  color: rgba(255, 255, 255, 0.75);
+  margin-top: $spacing-sm;
+}
+
+.quickActions {
+  display: flex;
+  gap: $spacing-md;
+  padding: 0 $page-padding;
+  margin-top: -40rpx;
+  margin-bottom: $spacing-md;
+}
+
+.quickCard {
+  flex: 1;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  box-shadow: $shadow-card;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.quickIcon {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-md;
+  background: $color-primary-bg;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32rpx;
+  margin-bottom: $spacing-sm;
+}
+
+.quickLabel {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.content {
+  padding: 0 $page-padding;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+  margin-top: $spacing-md;
+}
+
+.emptyBox {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-xl $spacing-lg;
+  text-align: center;
+  box-shadow: $shadow-card;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-xs;
+}
+
+.emptyHint {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.actionBar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: $spacing-md $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + $spacing-md);
+  background: $color-bg-card;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: $spacing-md;
+  z-index: 10;
+}
+
+.btnSecondary {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: $color-bg-hover;
+  color: $color-text-primary;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.btnPrimary {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-lg;
+  border-radius: $radius-button;
+  background: $color-primary;
+  color: $color-text-white;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.contentWithActionBar {
+  padding-bottom: calc(#{$button-height-lg} + #{$spacing-xl} + env(safe-area-inset-bottom));
+}
+
+.recentList {
+  margin-top: $spacing-md;
+}
+
+.recentItem {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+  box-shadow: $shadow-card;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.recentInfo {
+  flex: 1;
+}
+
+.recentTitle {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: 6rpx;
+}
+
+.recentSub {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.recentStatus {
+  font-size: $font-size-xs;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-round;
+  background: $color-success-bg;
+  color: $color-success;
+}
+
+.statusWarning {
+  background: $color-warning-bg;
+  color: $color-warning;
+}

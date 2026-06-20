@@ -1,0 +1,34 @@
+@use '@/styles/compat.scss';
+@use '@/styles/variables.scss' as *;
+
+// 全局样式
+page {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'PingFang SC', 'Hiragino Sans GB',
+    sans-serif;
+  font-size: $font-size-md;
+  line-height: $line-height-normal;
+  color: $color-text-primary;
+  background-color: $color-bg-page;
+}
+
+// 通用容器
+.pageContainer {
+  padding: 0 $page-padding;
+  padding-bottom: 32rpx;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+// 卡片通用样式
+.card {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+}
+
+// 安全底部间距
+.safeBottom {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 32rpx);
+}

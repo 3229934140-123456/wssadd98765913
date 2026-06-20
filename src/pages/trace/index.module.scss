@@ -1,0 +1,279 @@
+@use '@/styles/variables.scss' as *;
+
+.page {
+  min-height: 100vh;
+  background: $color-bg-page;
+  padding: 0 $page-padding;
+  padding-bottom: calc(env(safe-area-inset-bottom) + 32rpx);
+  box-sizing: border-box;
+}
+
+.overviewCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-top: $spacing-md;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.routeLine {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+}
+
+.routePoint {
+  text-align: center;
+  flex: 1;
+}
+
+.pointLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-bottom: 6rpx;
+}
+
+.pointName {
+  font-size: $font-size-md;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  @include text-ellipsis;
+}
+
+.routeConnector {
+  flex: 0 0 80rpx;
+  height: 2rpx;
+  background: $color-border;
+  position: relative;
+  margin: 0 $spacing-sm;
+  margin-top: 24rpx;
+}
+
+.routeArrow {
+  position: absolute;
+  right: 0;
+  top: -6rpx;
+  width: 0;
+  height: 0;
+  border-left: 12rpx solid $color-border;
+  border-top: 8rpx solid transparent;
+  border-bottom: 8rpx solid transparent;
+}
+
+.statsRow {
+  display: flex;
+  justify-content: space-around;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.statItem {
+  text-align: center;
+}
+
+.statValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-primary;
+  margin-bottom: 6rpx;
+}
+
+.statValueWarning {
+  color: $color-warning;
+}
+
+.statValueError {
+  color: $color-error;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin: $spacing-md 0;
+}
+
+.legendRow {
+  display: flex;
+  gap: $spacing-lg;
+  padding: $spacing-sm 0;
+  margin-bottom: $spacing-sm;
+}
+
+.legendItem {
+  display: flex;
+  align-items: center;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.legendDot {
+  width: 16rpx;
+  height: 16rpx;
+  border-radius: $radius-round;
+  margin-right: 8rpx;
+}
+
+.dotNormal {
+  background: $color-primary;
+}
+
+.dotWarning {
+  background: $color-warning;
+}
+
+.dotError {
+  background: $color-error;
+}
+
+.dotSuccess {
+  background: $color-success;
+}
+
+.timelineCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-md $spacing-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+}
+
+.emptyBox {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-xl $spacing-lg;
+  text-align: center;
+  box-shadow: $shadow-card;
+  margin-top: $spacing-lg;
+}
+
+.emptyIcon {
+  font-size: 80rpx;
+  margin-bottom: $spacing-md;
+}
+
+.emptyText {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-xs;
+}
+
+.emptyHint {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-lg;
+}
+
+.scanBtn {
+  @include button-reset;
+  height: $button-height-md;
+  padding: 0 $spacing-xl;
+  border-radius: $radius-button;
+  background: $color-primary;
+  color: $color-text-white;
+  font-size: $font-size-md;
+  display: inline-flex;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.temperatureChart {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.chartTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-md;
+}
+
+.tempBars {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 160rpx;
+  padding-bottom: 32rpx;
+  position: relative;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.tempBar {
+  flex: 1;
+  margin: 0 4rpx;
+  border-radius: 4rpx 4rpx 0 0;
+  background: $color-primary-bg;
+  position: relative;
+  min-height: 8rpx;
+
+  &.barAbnormal {
+    background: $color-error-bg;
+  }
+
+  &.barWarning {
+    background: $color-warning-bg;
+  }
+}
+
+.tempFill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  border-radius: 4rpx 4rpx 0 0;
+  background: $color-primary;
+
+  .barAbnormal & {
+    background: $color-error;
+  }
+
+  .barWarning & {
+    background: $color-warning;
+  }
+}
+
+.tempLabels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8rpx;
+}
+
+.tempLabel {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  flex: 1;
+  text-align: center;
+}
+
+.filterTabs {
+  display: flex;
+  gap: $spacing-sm;
+  margin-bottom: $spacing-md;
+}
+
+.filterTab {
+  padding: 8rpx 20rpx;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  background: $color-bg-card;
+  border: 1rpx solid $color-border;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+    border-color: $color-primary;
+  }
+}

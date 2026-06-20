@@ -1,0 +1,156 @@
+@use '@/styles/variables.scss' as *;
+
+.timeline {
+  padding: $spacing-md 0;
+}
+
+.timelineItem {
+  position: relative;
+  padding-left: 60rpx;
+  padding-bottom: $spacing-lg;
+
+  &:last-child {
+    padding-bottom: 0;
+
+    .timelineLine {
+      display: none;
+    }
+  }
+}
+
+.timelineLine {
+  position: absolute;
+  left: 15rpx;
+  top: 40rpx;
+  bottom: 0;
+  width: 2rpx;
+  background: $color-border;
+}
+
+.timelineDot {
+  position: absolute;
+  left: 0;
+  top: 4rpx;
+  width: 32rpx;
+  height: 32rpx;
+  border-radius: $radius-round;
+  background: $color-border;
+  border: 4rpx solid $color-bg-card;
+  box-sizing: border-box;
+  z-index: 1;
+}
+
+.dotNormal {
+  background: $color-primary;
+}
+
+.dotSuccess {
+  background: $color-success;
+}
+
+.dotWarning {
+  background: $color-warning;
+}
+
+.dotError {
+  background: $color-error;
+}
+
+.timelineContent {
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border: 1rpx solid $color-border;
+}
+
+.contentWarning {
+  border-color: $color-warning;
+  background: $color-warning-bg;
+}
+
+.contentError {
+  border-color: $color-error;
+  background: $color-error-bg;
+}
+
+.contentSuccess {
+  border-color: $color-success;
+  background: $color-success-bg;
+}
+
+.itemHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-xs;
+}
+
+.itemTime {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.itemTemp {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-primary;
+
+  .tempWarning & {
+    color: $color-warning;
+  }
+
+  .tempError & {
+    color: $color-error;
+  }
+}
+
+.itemLocation {
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  margin-bottom: 8rpx;
+}
+
+.itemDesc {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-bottom: $spacing-sm;
+}
+
+.itemTag {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  background: $color-primary-bg;
+  color: $color-primary;
+  margin-right: $spacing-sm;
+}
+
+.tagWarning {
+  background: $color-warning-bg;
+  color: $color-warning;
+}
+
+.tagError {
+  background: $color-error-bg;
+  color: $color-error;
+}
+
+.tagSuccess {
+  background: $color-success-bg;
+  color: $color-success;
+}
+
+.remarkBox {
+  margin-top: $spacing-sm;
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed $color-border;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.remarkLabel {
+  color: $color-text-tertiary;
+  margin-right: 8rpx;
+}

@@ -1,0 +1,110 @@
+@use '@/styles/variables.scss' as *;
+
+.statusCard {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  color: $color-text-white;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+}
+
+.statusHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.waybillNo {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+}
+
+.statusBadge {
+  padding: 4rpx 16rpx;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.statusNormal {
+  background: $color-success;
+}
+
+.statusWarning {
+  background: $color-warning;
+}
+
+.statusError {
+  background: $color-error;
+}
+
+.vaccineName {
+  font-size: $font-size-xl;
+  font-weight: $font-weight-semibold;
+  margin-bottom: 8rpx;
+}
+
+.vaccineInfo {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+  margin-bottom: $spacing-lg;
+}
+
+.statsRow {
+  display: flex;
+  justify-content: space-between;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.statItem {
+  flex: 1;
+  text-align: center;
+
+  &:not(:last-child) {
+    border-right: 1rpx solid rgba(255, 255, 255, 0.2);
+  }
+}
+
+.statValue {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin-bottom: 4rpx;
+}
+
+.statLabel {
+  font-size: $font-size-xs;
+  opacity: 0.8;
+}
+
+.infoSection {
+  margin-top: $spacing-lg;
+  padding-top: $spacing-lg;
+  border-top: 1rpx solid rgba(255, 255, 255, 0.15);
+}
+
+.infoRow {
+  display: flex;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.infoLabel {
+  width: 160rpx;
+  font-size: $font-size-sm;
+  opacity: 0.75;
+  flex-shrink: 0;
+}
+
+.infoValue {
+  flex: 1;
+  font-size: $font-size-sm;
+  word-break: break-all;
+}
