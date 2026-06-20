@@ -1,9 +1,12 @@
-import React from 'react'
-import { View, Text, Image } from '@tarojs/components'
+import React, { useRef, useState, useEffect } from 'react'
+import { View, Text, Image, Input, Textarea, Picker } from '@tarojs/components'
+import Taro from '@tarojs/taro'
 import classnames from 'classnames'
+import { useVaccineStore } from '@/store/vaccineStore'
 import styles from './index.module.scss'
-import type { AcceptanceRecord, VaccineBatch } from '@/types/vaccine'
+import type { AcceptanceRecord, VaccineBatch, RejectTracking } from '@/types/vaccine'
 import { mockPhotoItems } from '@/data/mockVaccine'
+import VoucherCanvas, { VoucherCanvasHandle } from '@/components/VoucherCanvas'
 
 interface AcceptanceCardProps {
   record: AcceptanceRecord
@@ -12,9 +15,11 @@ interface AcceptanceCardProps {
   showTraceSummary?: boolean
   showBatches?: boolean
   photoPlaceholders?: boolean
+  showRejectTracking?: boolean
   onExport?: () => void
   onShare?: () => void
   onMakeupPhoto?: (label: string) => void
+  onTrackingUpdate?: () => void
 }
 
 const AcceptanceCard: React.FC<AcceptanceCardProps> = ({
@@ -24,10 +29,22 @@ const AcceptanceCard: React.FC<AcceptanceCardProps> = ({
   showTraceSummary = false,
   showBatches = false,
   photoPlaceholders = false,
-  onExport,
-  onShare,
-  onMakeupPhoto
+  showRejectTracking = false,
+  onMakeupPhoto,
+  onTrackingUpdate
 }) => {
+  const { getRejectTrackingByAcceptanceId, updateRejectTracking, getHandoverById } = useVaccineStore()
+  const voucherRef = useRef<VoucherCanvasHandle>(null)
+  const [generating, setGenerating] = useState(false)
+
+  const [tracking, setTracking] = useState<RejectTracking | null>(null)
+  const [editable, setEditable] = useState(false)
+  const [carrierRemark, setCarrierRemark] = useState('')
+  const [replenishQty, setReplenishQty] = useState('0')
+  const [reviewResult, setReviewResult] = useState<string>('pending')
+  const [reviewRemark, setReviewRemark] = useState('')
+  const [reviewerName, setReviewerName] = useState('')
+
   const statusText = {
     passed: '验收合格',
     rejected: '验收不合格',
@@ -53,6 +70,90 @@ const AcceptanceCard: React.FC<AcceptanceCardProps> = ({
     return record.photos?.find((p) => p.label === label)
   }
 
+  useEffect(() => {
+    if (isRejected) {
+      const t = getRejectTrackingByAcceptanceId(record.id) || null
+      setTracking(t)
+      if (t) {
+        setCarrierRemark(t.carrierRemark)
+        setReplenishQty(String(t.replenishQty))
+        setReviewResult(t.reviewResult)
+        setReviewRemark(t.reviewRemark)
+        setReviewerName(t.reviewerName)
+      }
+    }
+  }, [isRejected, record.id, getRejectTrackingByAcceptanceId])
+
+  const handover = record.handoverId ? getHandoverById(record.handoverId) : undefined
+  const reviewStatusMap: Record<string, string> = {
+    closed: '已闭环',
+    processing: '处理中',
+    pending: '待处理'
+  }
+
+  const handleGenerateAndExport = async () => {
+    if (generating) return
+    try {
+      setGenerating(true)
+      Taro.showLoading({ title: '生成中...', mask: true })
+      if (voucherRef.current) {
+        await voucherRef.current.generateVoucher(record, checkItemLabels)
+        setTimeout(async () => {
+          Taro.hideLoading()
+          if (voucherRef.current) {
+            await voucherRef.current.previewVoucher()
+            setTimeout(() => {
+              Taro.showActionSheet({
+                itemList: ['保存到相册', '发给科室负责人/好友'],
+                success: (res) => {
+                  if (!voucherRef.current) return
+                  if (res.tapIndex === 0) voucherRef.current.saveVoucher()
+                  else if (res.tapIndex === 1) voucherRef.current.shareVoucher()
+                }
+              })
+            }, 500)
+          }
+          setGenerating(false)
+        }, 800)
+      } else {
+        Taro.hideLoading()
+        setGenerating(false)
+      }
+    } catch (err) {
+      Taro.hideLoading()
+      setGenerating(false)
+      Taro.showToast({ title: '生成失败', icon: 'none' })
+    }
+  }
+
+  const handleSaveTracking = () => {
+    if (!reviewerName.trim()) {
+      Taro.showToast({ title: '请填写复核人姓名', icon: 'none' })
+      return
+    }
+    const res = updateRejectTracking(
+      record.id,
+      {
+        carrierRemark,
+        replenishQty: parseInt(replenishQty) || 0,
+        reviewResult: reviewResult as any,
+        reviewRemark
+      },
+      reviewerName.trim()
+    )
+    if (res.success) {
+      Taro.showToast({ title: '已更新跟踪记录', icon: 'success' })
+      setEditable(false)
+      setTracking(getRejectTrackingByAcceptanceId(record.id) || null)
+      onTrackingUpdate?.()
+    } else {
+      Taro.showToast({ title: res.message, icon: 'none' })
+    }
+  }
+
+  const resultOptions = ['待处理', '处理中', '已闭环']
+  const resultValues = ['pending', 'processing', 'closed']
+
   return (
     <View className={styles.card}>
       <View
@@ -67,22 +168,22 @@ const AcceptanceCard: React.FC<AcceptanceCardProps> = ({
         <View className={styles.statusBadge}>{statusText[record.status]}</View>
       </View>
 
-      {(onExport || onShare) && (
-        <View className={styles.actionRow}>
-          {onExport && (
-            <View className={styles.actionBtn} onClick={onExport}>
-              <Text className={styles.actionIcon}>📥</Text>
-              <Text>导出凭证</Text>
-            </View>
-          )}
-          {onShare && (
-            <View className={styles.actionBtn} onClick={onShare}>
-              <Text className={styles.actionIcon}>📤</Text>
-              <Text>分享</Text>
-            </View>
-          )}
+      <View className={styles.actionRow}>
+        <View
+          className={classnames(styles.actionBtn, { [styles.actionBtnLoading]: generating })}
+          onClick={handleGenerateAndExport}
+        >
+          <Text className={styles.actionIcon}>📥</Text>
+          <Text>{generating ? '生成中...' : '导出/分享凭证'}</Text>
         </View>
-      )}
+        <View
+          className={classnames(styles.actionBtn, styles.actionBtnPreview)}
+          onClick={() => voucherRef.current?.previewVoucher()}
+        >
+          <Text className={styles.actionIcon}>�</Text>
+          <Text>预览</Text>
+        </View>
+      </View>
 
       <View className={styles.cardBody}>
         <View className={styles.infoGrid}>
@@ -127,6 +228,22 @@ const AcceptanceCard: React.FC<AcceptanceCardProps> = ({
               {record.receiverDept || '预防接种门诊'}
             </View>
           </View>
+          {handover && (
+            <View className={styles.infoItem}>
+              <View className={styles.infoLabel}>交接状态</View>
+              <View className={styles.infoValue}>
+                <View
+                  className={classnames(styles.handoverTag, {
+                    [styles.handoverDone]: handover.confirmStatus === 'confirmed'
+                  })}
+                >
+                  {handover.confirmStatus === 'confirmed'
+                    ? `已交接（${handover.confirmerName}）`
+                    : '待科室负责人确认'}
+                </View>
+              </View>
+            </View>
+          )}
         </View>
 
         {showTraceSummary && record.traceSummary && (
@@ -326,6 +443,123 @@ const AcceptanceCard: React.FC<AcceptanceCardProps> = ({
           </>
         )}
 
+        {isRejected && showRejectTracking && (
+          <>
+            <View className={styles.divider} />
+            <View className={styles.sectionTitle}>
+              <Text className={styles.sectionTitleIcon}>🔄</Text>
+              不合格处理跟踪
+              {tracking && (
+                <Text
+                  className={classnames(styles.statusTag, {
+                    [styles.statusTagClosed]: tracking.reviewResult === 'closed',
+                    [styles.statusTagProcessing]: tracking.reviewResult === 'processing'
+                  })}
+                >
+                  {reviewStatusMap[tracking.reviewResult]}
+                </Text>
+              )}
+              {!editable && (
+                <Text className={styles.editBtn} onClick={() => setEditable(true)}>
+                  编辑
+                </Text>
+              )}
+            </View>
+            <View className={styles.trackingBox}>
+              {editable || !tracking ? (
+                <>
+                  <View className={styles.trackingRow}>
+                    <Text className={styles.trackingLabel}>承运方说明</Text>
+                    <Textarea
+                      className={styles.trackingTextarea}
+                      placeholder='承运方对异常情况的说明'
+                      value={carrierRemark}
+                      onInput={(e) => setCarrierRemark(e.detail.value)}
+                      maxlength={300}
+                    />
+                  </View>
+                  <View className={styles.trackingRow}>
+                    <Text className={styles.trackingLabel}>补货数量</Text>
+                    <Input
+                      className={styles.trackingInput}
+                      type='number'
+                      placeholder='承运方承诺补发数量（支）'
+                      value={replenishQty}
+                      onInput={(e) => setReplenishQty(e.detail.value)}
+                    />
+                    <Text className={styles.trackingUnit}>支</Text>
+                  </View>
+                  <View className={styles.trackingRow}>
+                    <Text className={styles.trackingLabel}>处理结果</Text>
+                    <Picker
+                      mode='selector'
+                      range={resultOptions}
+                      value={resultValues.indexOf(reviewResult)}
+                      onChange={(e) => setReviewResult(resultValues[Number(e.detail.value)])}
+                    >
+                      <View className={styles.trackingPicker}>
+                        {resultOptions[resultValues.indexOf(reviewResult)]}
+                        <Text className={styles.pickerArrow}>▾</Text>
+                      </View>
+                    </Picker>
+                  </View>
+                  <View className={styles.trackingRow}>
+                    <Text className={styles.trackingLabel}>复核意见</Text>
+                    <Textarea
+                      className={styles.trackingTextarea}
+                      placeholder='对本次不合格的复核结论'
+                      value={reviewRemark}
+                      onInput={(e) => setReviewRemark(e.detail.value)}
+                      maxlength={400}
+                    />
+                  </View>
+                  <View className={styles.trackingRow}>
+                    <Text className={styles.trackingLabel}>复核人*</Text>
+                    <Input
+                      className={styles.trackingInput}
+                      placeholder='请填写复核人姓名'
+                      value={reviewerName}
+                      onInput={(e) => setReviewerName(e.detail.value)}
+                    />
+                  </View>
+                  <View className={styles.trackingActions}>
+                    <View className={styles.trackingBtnCancel} onClick={() => {
+                      setEditable(false)
+                      if (tracking) {
+                        setCarrierRemark(tracking.carrierRemark)
+                        setReplenishQty(String(tracking.replenishQty))
+                        setReviewResult(tracking.reviewResult)
+                        setReviewRemark(tracking.reviewRemark)
+                        setReviewerName(tracking.reviewerName)
+                      }
+                    }}>取消</View>
+                    <View className={styles.trackingBtnSave} onClick={handleSaveTracking}>保存</View>
+                  </View>
+                </>
+              ) : (
+                <>
+                  <View className={styles.trackingInfoRow}>
+                    <Text className={styles.trackingK}>承运方说明：</Text>
+                    <Text className={styles.trackingV}>{tracking.carrierRemark || '无'}</Text>
+                  </View>
+                  <View className={styles.trackingInfoRow}>
+                    <Text className={styles.trackingK}>补货数量：</Text>
+                    <Text className={styles.trackingV}>{tracking.replenishQty}支</Text>
+                  </View>
+                  <View className={styles.trackingInfoRow}>
+                    <Text className={styles.trackingK}>复核意见：</Text>
+                    <Text className={styles.trackingV}>{tracking.reviewRemark || '无'}</Text>
+                  </View>
+                  <View className={styles.trackingFooter}>
+                    <Text>复核人：{tracking.reviewerName}</Text>
+                    <Text>{(tracking.reviewTime || '').slice(5, 16)}</Text>
+                  </View>
+                </>
+              )}
+            </View>
+          </>
+        )}
+
         <View
           className={classnames(styles.conclusionBox, {
             [styles.conclusionRejected]: isRejected
@@ -353,6 +587,8 @@ const AcceptanceCard: React.FC<AcceptanceCardProps> = ({
           {(record.signTime || '').slice(5, 16) || '-'}
         </View>
       </View>
+
+      <VoucherCanvas ref={voucherRef} />
     </View>
   )
 }

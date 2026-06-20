@@ -77,4 +77,34 @@ export interface AcceptanceRecord {
   status: 'passed' | 'rejected' | 'pending'
   signTime: string
   traceSummary?: TraceSummary
+  handoverId?: string
+  rejectTrackingId?: string
+}
+
+export interface RejectTracking {
+  id: string
+  acceptanceId: string
+  carrierRemark: string
+  replenishQty: number
+  reviewResult: 'closed' | 'pending' | 'processing'
+  reviewRemark: string
+  reviewTime: string
+  reviewerName: string
+}
+
+export interface Handover {
+  id: string
+  title: string
+  dept: string
+  month: string
+  recordIds: string[]
+  passedCount: number
+  rejectedCount: number
+  totalQty: number
+  rejectedQty: number
+  createTime: string
+  creatorName: string
+  confirmStatus: 'pending' | 'confirmed'
+  confirmerName?: string
+  confirmTime?: string
 }

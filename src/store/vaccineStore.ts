@@ -6,7 +6,9 @@ import type {
   CheckItem,
   PhotoItem,
   AcceptanceRecord,
-  TraceSummary
+  TraceSummary,
+  Handover,
+  RejectTracking
 } from '@/types/vaccine'
 import {
   mockShipmentInfo,
@@ -15,7 +17,9 @@ import {
   mockPhotoItems,
   mockAcceptanceHistory,
   mockVaccineBatches,
-  mockTraceSummary
+  mockTraceSummary,
+  mockHandovers,
+  mockRejectTrackings
 } from '@/data/mockVaccine'
 import dayjs from 'dayjs'
 
@@ -29,6 +33,8 @@ export interface VaccineStore {
   vaccineBatches: VaccineBatch[]
   acceptanceRecord: AcceptanceRecord | null
   acceptanceHistory: AcceptanceRecord[]
+  handovers: Handover[]
+  rejectTrackings: RejectTracking[]
 
   scanWaybill: (waybillNo: string) => void
   scanWaybillDirect: (waybillNo: string) => { success: boolean }
@@ -49,6 +55,8 @@ export interface VaccineStore {
     month?: string
     dept?: string
     status?: string
+    handoverStatus?: string
+    rejectStatus?: string
   }) => AcceptanceRecord[]
   getHistoryStats: (filters?: {
     month?: string
@@ -62,6 +70,26 @@ export interface VaccineStore {
   }
   getAvailableDepts: () => string[]
   getAvailableMonths: () => string[]
+
+  createHandover: (
+    recordIds: string[],
+    dept: string,
+    month: string,
+    creatorName: string
+  ) => Handover | null
+  getHandoverById: (id: string) => Handover | undefined
+  getHandoversByDept: (dept?: string) => Handover[]
+  confirmHandover: (
+    handoverId: string,
+    confirmerName: string
+  ) => { success: boolean; message: string }
+  getRejectTrackingById: (id: string) => RejectTracking | undefined
+  getRejectTrackingByAcceptanceId: (acceptanceId: string) => RejectTracking | undefined
+  updateRejectTracking: (
+    acceptanceId: string,
+    data: Partial<Omit<RejectTracking, 'id' | 'acceptanceId'>>,
+    reviewerName: string
+  ) => { success: boolean; message: string }
 }
 
 export const useVaccineStore = create<VaccineStore>((set, get) => ({
@@ -74,6 +102,8 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
   vaccineBatches: [],
   acceptanceRecord: null,
   acceptanceHistory: mockAcceptanceHistory,
+  handovers: mockHandovers,
+  rejectTrackings: mockRejectTrackings,
 
   scanWaybill: (waybillNo) => {
     if (!waybillNo || !waybillNo.trim()) {
@@ -393,5 +423,159 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
       }
     })
     return Array.from(months).sort().reverse()
+  },
+
+  getFilteredHistory: (filters) => {
+    const { acceptanceHistory, handovers, rejectTrackings } = get()
+    let result = [...acceptanceHistory]
+
+    if (filters.month && filters.month !== 'all') {
+      result = result.filter((r) =>
+        dayjs(r.signTime).format('YYYY-MM') === filters.month
+      )
+    }
+    if (filters.dept && filters.dept !== 'all') {
+      result = result.filter((r) => (r.receiverDept || '预防接种门诊') === filters.dept)
+    }
+    if (filters.status && filters.status !== 'all') {
+      result = result.filter((r) => r.status === filters.status)
+    }
+    if (filters.handoverStatus && filters.handoverStatus !== 'all') {
+      const handoverMap = new Map(handovers.map((h) => [h.id, h]))
+      result = result.filter((r) => {
+        const h = r.handoverId ? handoverMap.get(r.handoverId) : undefined
+        if (filters.handoverStatus === 'done') return !!h && h.confirmStatus === 'confirmed'
+        if (filters.handoverStatus === 'pending') return !!h && h.confirmStatus === 'pending'
+        if (filters.handoverStatus === 'none') return !h
+        return true
+      })
+    }
+    if (filters.rejectStatus && filters.rejectStatus !== 'all') {
+      const rejectMap = new Map(rejectTrackings.map((rt) => [rt.acceptanceId, rt]))
+      result = result.filter((r) => {
+        if (r.status !== 'rejected') return false
+        const rt = rejectMap.get(r.id)
+        if (filters.rejectStatus === 'closed') return !!rt && rt.reviewResult === 'closed'
+        if (filters.rejectStatus === 'processing') return !!rt && rt.reviewResult === 'processing'
+        if (filters.rejectStatus === 'pending') return !rt || rt.reviewResult === 'pending'
+        return true
+      })
+    }
+
+    return result
+  },
+
+  createHandover: (recordIds, dept, month, creatorName) => {
+    if (!recordIds || recordIds.length === 0) return null
+    const history = get().acceptanceHistory
+    const records = recordIds.map((id) => history.find((r) => r.id === id)).filter(Boolean) as AcceptanceRecord[]
+    if (records.length === 0) return null
+
+    let passedCount = 0
+    let rejectedCount = 0
+    let totalQty = 0
+    let rejectedQty = 0
+    records.forEach((r) => {
+      const qty = r.vaccineBatches.reduce((sum, b) => sum + (b.actualQuantity || b.expectedQuantity), 0)
+      totalQty += qty
+      if (r.status === 'passed') passedCount += 1
+      else { rejectedCount += 1; rejectedQty += qty }
+    })
+
+    const newHandover: Handover = {
+      id: `hd${Date.now()}`,
+      title: `${month}年${dept}交接清单`,
+      dept,
+      month,
+      recordIds: [...recordIds],
+      passedCount,
+      rejectedCount,
+      totalQty,
+      rejectedQty,
+      createTime: new Date().toISOString().replace('T', ' ').substring(0, 19),
+      creatorName: creatorName || '系统',
+      confirmStatus: 'pending'
+    }
+
+    set((state) => ({
+      handovers: [newHandover, ...state.handovers],
+      acceptanceHistory: state.acceptanceHistory.map((r) =>
+        recordIds.includes(r.id) ? { ...r, handoverId: newHandover.id } : r
+      )
+    }))
+
+    return newHandover
+  },
+
+  getHandoverById: (id) => {
+    return get().handovers.find((h) => h.id === id)
+  },
+
+  getHandoversByDept: (dept) => {
+    const list = [...get().handovers]
+    if (dept && dept !== 'all') return list.filter((h) => h.dept === dept)
+    return list.sort((a, b) => (a.createTime < b.createTime ? 1 : -1))
+  },
+
+  confirmHandover: (handoverId, confirmerName) => {
+    if (!confirmerName || !confirmerName.trim()) {
+      return { success: false, message: '请填写科室负责人姓名' }
+    }
+    const handover = get().getHandoverById(handoverId)
+    if (!handover) return { success: false, message: '交接单不存在' }
+
+    const now = new Date().toISOString().replace('T', ' ').substring(0, 19)
+    set((state) => ({
+      handovers: state.handovers.map((h) =>
+        h.id === handoverId
+          ? { ...h, confirmStatus: 'confirmed', confirmerName: confirmerName.trim(), confirmTime: now }
+          : h
+      )
+    }))
+    return { success: true, message: '' }
+  },
+
+  getRejectTrackingById: (id) => {
+    return get().rejectTrackings.find((rt) => rt.id === id)
+  },
+
+  getRejectTrackingByAcceptanceId: (acceptanceId) => {
+    return get().rejectTrackings.find((rt) => rt.acceptanceId === acceptanceId)
+  },
+
+  updateRejectTracking: (acceptanceId, data, reviewerName) => {
+    if (!reviewerName || !reviewerName.trim()) {
+      return { success: false, message: '请填写复核人姓名' }
+    }
+    const existing = get().getRejectTrackingByAcceptanceId(acceptanceId)
+    const now = new Date().toISOString().replace('T', ' ').substring(0, 19)
+
+    if (existing) {
+      set((state) => ({
+        rejectTrackings: state.rejectTrackings.map((rt) =>
+          rt.id === existing.id
+            ? { ...rt, ...data, reviewTime: now, reviewerName: reviewerName.trim() }
+            : rt
+        )
+      }))
+    } else {
+      const newTracking: RejectTracking = {
+        id: `rt${Date.now()}`,
+        acceptanceId,
+        carrierRemark: data.carrierRemark || '',
+        replenishQty: data.replenishQty || 0,
+        reviewResult: data.reviewResult || 'pending',
+        reviewRemark: data.reviewRemark || '',
+        reviewTime: now,
+        reviewerName: reviewerName.trim()
+      }
+      set((state) => ({
+        rejectTrackings: [newTracking, ...state.rejectTrackings],
+        acceptanceHistory: state.acceptanceHistory.map((r) =>
+          r.id === acceptanceId ? { ...r, rejectTrackingId: newTracking.id } : r
+        )
+      }))
+    }
+    return { success: true, message: '' }
   }
 }))

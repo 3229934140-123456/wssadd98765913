@@ -5,7 +5,9 @@ import type {
   CheckItem,
   PhotoItem,
   AcceptanceRecord,
-  TraceSummary
+  TraceSummary,
+  Handover,
+  RejectTracking
 } from '@/types/vaccine'
 
 export const mockShipmentInfo: ShipmentInfo = {
@@ -202,7 +204,8 @@ export const mockAcceptanceHistory: AcceptanceRecord[] = [
     abnormalConclusion: '运输过程中有2次开门记录，均为正常作业操作，温度全程在2℃~8℃标准范围内，验收合格。',
     status: 'passed',
     signTime: '2024-06-15 14:35:22',
-    traceSummary: mockTraceSummary
+    traceSummary: mockTraceSummary,
+    handoverId: 'hd20240630001'
   },
   {
     id: 'acc20240614003',
@@ -239,7 +242,8 @@ export const mockAcceptanceHistory: AcceptanceRecord[] = [
       doorOpenCount: 0,
       temperatureRange: '2.5~5.8℃',
       routeText: '省疾控中心冷链仓库（A区）→ 朝阳社区卫生服务中心'
-    }
+    },
+    handoverId: 'hd20240628002'
   },
   {
     id: 'acc20240612005',
@@ -274,7 +278,9 @@ export const mockAcceptanceHistory: AcceptanceRecord[] = [
       doorOpenCount: 1,
       temperatureRange: '3.0~6.9℃',
       routeText: '市疾控中心冷链仓库→ 朝阳社区卫生服务中心'
-    }
+    },
+    rejectTrackingId: 'rt001',
+    handoverId: 'hd20240630001'
   },
   {
     id: 'acc20240528012',
@@ -323,7 +329,8 @@ export const mockAcceptanceHistory: AcceptanceRecord[] = [
       doorOpenCount: 0,
       temperatureRange: '2.2~5.5℃',
       routeText: '省疾控中心冷链仓库（A区）→ 朝阳社区卫生服务中心'
-    }
+    },
+    handoverId: 'hd20240531001'
   },
   {
     id: 'acc20240515008',
@@ -361,6 +368,78 @@ export const mockAcceptanceHistory: AcceptanceRecord[] = [
       doorOpenCount: 0,
       temperatureRange: '2.8~6.2℃',
       routeText: '市疾控中心冷链仓库→ 朝阳社区卫生服务中心'
-    }
+    },
+    rejectTrackingId: 'rt002',
+    handoverId: 'hd20240531001'
+  }
+]
+
+export const mockHandovers: Handover[] = [
+  {
+    id: 'hd20240630001',
+    title: '2024年6月预防接种门诊交接清单',
+    dept: '预防接种门诊',
+    month: '2024-06',
+    recordIds: ['acc20240615001', 'acc20240612005'],
+    passedCount: 1,
+    rejectedCount: 1,
+    totalQty: 535,
+    rejectedQty: 295,
+    createTime: '2024-06-30 17:20:00',
+    creatorName: '李护士',
+    confirmStatus: 'pending'
+  },
+  {
+    id: 'hd20240628002',
+    title: '2024年6月药剂科交接清单',
+    dept: '药剂科',
+    month: '2024-06',
+    recordIds: ['acc20240614003'],
+    passedCount: 1,
+    rejectedCount: 0,
+    totalQty: 180,
+    rejectedQty: 0,
+    createTime: '2024-06-28 15:40:00',
+    creatorName: '王药械',
+    confirmStatus: 'pending'
+  },
+  {
+    id: 'hd20240531001',
+    title: '2024年5月儿童保健科+药剂科交接清单',
+    dept: '儿童保健科',
+    month: '2024-05',
+    recordIds: ['acc20240528012', 'acc20240515008'],
+    passedCount: 1,
+    rejectedCount: 1,
+    totalQty: 450,
+    rejectedQty: 100,
+    createTime: '2024-05-31 18:00:00',
+    creatorName: '李护士',
+    confirmStatus: 'confirmed',
+    confirmerName: '张主任',
+    confirmTime: '2024-05-31 18:35:22'
+  }
+]
+
+export const mockRejectTrackings: RejectTracking[] = [
+  {
+    id: 'rt001',
+    acceptanceId: 'acc20240612005',
+    carrierRemark: '运输途中配送中转站装卸时清点失误，5支疫苗已确认在下批次运单补发',
+    replenishQty: 5,
+    reviewResult: 'processing',
+    reviewRemark: '已联系承运方确认，补发疫苗预计6月18日到货，届时再复核',
+    reviewTime: '2024-06-13 09:20:00',
+    reviewerName: '王药械'
+  },
+  {
+    id: 'rt002',
+    acceptanceId: 'acc20240515008',
+    carrierRemark: '配送车辆途中紧急避让导致箱体挤压，承运方已出具书面情况说明',
+    replenishQty: 0,
+    reviewResult: 'closed',
+    reviewRemark: '经门诊主任开箱逐一检查，内部疫苗完好无渗漏无破损，温度全程正常，判定可正常使用，不合格记录已闭环归档',
+    reviewTime: '2024-05-16 10:15:00',
+    reviewerName: '张主任'
   }
 ]

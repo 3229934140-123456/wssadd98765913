@@ -79,6 +79,15 @@
   }
 }
 
+.actionBtnLoading {
+  opacity: 0.6;
+}
+
+.actionBtnPreview {
+  background: $color-success-bg;
+  color: $color-success;
+}
+
 .actionIcon {
   font-size: $font-size-md;
 }
@@ -130,6 +139,20 @@
   margin-left: $spacing-xs;
   flex-shrink: 0;
   font-weight: $font-weight-regular;
+}
+
+.handoverTag {
+  font-size: 20rpx;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-round;
+  background: $color-warning-bg;
+  color: $color-warning;
+  display: inline-block;
+}
+
+.handoverDone {
+  background: $color-success-bg;
+  color: $color-success;
 }
 
 .divider {
@@ -470,5 +493,192 @@
 
 .signTime {
   font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.sectionTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+  display: flex;
+  align-items: center;
+}
+
+.sectionTitleIcon {
+  margin-right: 8rpx;
+  font-size: $font-size-md;
+}
+
+.batchCountTag {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-regular;
+  margin-left: $spacing-xs;
+}
+
+.editBtn {
+  margin-left: auto;
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-regular;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-round;
+  background: $color-primary-bg;
+}
+
+.statusTag {
+  font-size: 20rpx;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-round;
+  margin-left: $spacing-sm;
+  background: $color-warning-bg;
+  color: $color-warning;
+}
+
+.statusTagClosed {
+  background: $color-success-bg;
+  color: $color-success;
+}
+
+.statusTagProcessing {
+  background: $color-primary-bg;
+  color: $color-primary;
+}
+
+.trackingBox {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.trackingRow {
+  margin-bottom: $spacing-md;
+
+  &:last-of-type {
+    margin-bottom: $spacing-sm;
+  }
+}
+
+.trackingLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-bottom: 8rpx;
+  display: block;
+}
+
+.trackingTextarea {
+  width: 100%;
+  min-height: 100rpx;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: $spacing-sm $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  line-height: 1.5;
+  box-sizing: border-box;
+  border: none;
+}
+
+.trackingInput {
+  width: 240rpx;
+  height: 64rpx;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: 0 $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  margin-right: $spacing-sm;
+  border: none;
+  display: inline-block;
+}
+
+.trackingUnit {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.trackingPicker {
+  height: 64rpx;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  padding: 0 $spacing-md;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pickerArrow {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  margin-left: $spacing-sm;
+}
+
+.trackingActions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}
+
+.trackingBtnCancel {
+  @include button-reset;
+  flex: 1;
+  height: 64rpx;
+  border-radius: $radius-md;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.trackingBtnSave {
+  @include button-reset;
+  flex: 1;
+  height: 64rpx;
+  border-radius: $radius-md;
+  background: $color-primary;
+  color: $color-text-white;
+  font-size: $font-size-sm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.trackingInfoRow {
+  font-size: $font-size-sm;
+  margin-bottom: $spacing-sm;
+  line-height: 1.5;
+
+  &:last-of-type {
+    margin-bottom: $spacing-md;
+  }
+}
+
+.trackingK {
+  color: $color-text-tertiary;
+}
+
+.trackingV {
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.trackingFooter {
+  padding-top: $spacing-sm;
+  border-top: 1rpx dashed $color-divider;
+  display: flex;
+  justify-content: space-between;
+  font-size: $font-size-xs;
   color: $color-text-tertiary;
 }

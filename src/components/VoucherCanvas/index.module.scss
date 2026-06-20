@@ -1,0 +1,38 @@
+@use '@/styles/variables.scss' as *;
+
+.canvasWrap {
+  width: 100%;
+}
+
+.hiddenCanvas {
+  position: fixed;
+  left: -9999px;
+  top: -9999px;
+  width: 750px;
+  height: 1600px;
+  z-index: -1;
+  pointer-events: none;
+  visibility: hidden;
+}
+
+.previewBox {
+  margin-top: $spacing-md;
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  border: 1rpx dashed $color-primary;
+}
+
+.previewLabel {
+  font-size: $font-size-xs;
+  color: $color-primary;
+  font-weight: $font-weight-medium;
+  margin-bottom: $spacing-sm;
+  text-align: center;
+}
+
+.previewImg {
+  width: 100%;
+  border-radius: $radius-sm;
+  display: block;
+}
