@@ -56,11 +56,11 @@ const ReceiptPage: React.FC = () => {
   }
 
   const canSubmit = () => {
-    const allRequiredChecked = checkItems
+    const allRequiredTouched = checkItems
       .filter((item) => item.required)
-      .every((item) => checkResults[item.id] === true)
+      .every((item) => checkResults[item.id] !== undefined)
 
-    return allRequiredChecked && receiverName.trim() !== ''
+    return allRequiredTouched && receiverName.trim() !== ''
   }
 
   const handleSubmit = (status: 'passed' | 'rejected') => {
@@ -72,34 +72,25 @@ const ReceiptPage: React.FC = () => {
       return
     }
 
-    if (!canSubmit()) {
-      Taro.showToast({
-        title: '请完成所有必选项并填写签收人',
-        icon: 'none'
-      })
-      return
-    }
-
-    let finalConclusion = ''
-    if (status === 'passed') {
+    let finalConclusion = conclusion.trim()
+    if (status === 'passed' && !finalConclusion) {
       const abnormalCount = shipmentInfo.hasDoorOpen ? shipmentInfo.doorOpenCount : 0
       if (abnormalCount > 0) {
         finalConclusion = `运输过程中有${abnormalCount}次开门记录，均为正常作业操作，温度全程在${shipmentInfo.temperatureStandard}标准范围内，验收合格。`
       } else {
         finalConclusion = `运输全程温度正常（${shipmentInfo.temperatureMin}~${shipmentInfo.temperatureMax}℃），无异常开门记录，验收合格。`
       }
-    } else {
-      finalConclusion = conclusion || '验收不合格，存在异常情况。'
     }
 
-    const success = submitAcceptance(status, finalConclusion)
-    if (success) {
+    const result = submitAcceptance(status, finalConclusion, receiverName, receiverDept)
+    if (result.success) {
       setShowSuccess(true)
       console.log('[ReceiptPage] 验收提交成功')
     } else {
       Taro.showToast({
-        title: '提交失败，请重试',
-        icon: 'none'
+        title: result.message || '提交失败，请重试',
+        icon: 'none',
+        duration: 2500
       })
     }
   }
@@ -193,22 +184,22 @@ const ReceiptPage: React.FC = () => {
             </View>
           </View>
 
-          {!allChecksPassed && (
-            <View className={styles.section}>
-              <View className={styles.sectionTitle}>
-                <Text className={styles.sectionIcon}>📝</Text>
-                异常说明
-              </View>
-              <View className={styles.sectionDesc}>如有不合格项，请详细说明情况</View>
-              <Textarea
-                className={styles.conclusionTextarea}
-                placeholder='请填写异常情况说明...'
-                value={conclusion}
-                onInput={(e) => setConclusion(e.detail.value)}
-                maxlength={500}
-              />
+          <View className={styles.section}>
+            <View className={styles.sectionTitle}>
+              <Text className={styles.sectionIcon}>📝</Text>
+              验收结论
             </View>
-          )}
+            <View className={styles.sectionDesc}>
+              {allChecksPassed ? '验收合格时可自动生成，也可补充说明' : '存在不合格项，请详细说明情况（必填）'}
+            </View>
+            <Textarea
+              className={styles.conclusionTextarea}
+              placeholder={allChecksPassed ? '请填写验收结论（选填）...' : '请填写异常情况说明（必填）...'}
+              value={conclusion}
+              onInput={(e) => setConclusion(e.detail.value)}
+              maxlength={500}
+            />
+          </View>
 
           <View className={styles.actionBar}>
             <View

@@ -26,7 +26,7 @@ interface VaccineStore {
   setCheckResult: (itemId: string, passed: boolean) => void
   setPhotoUrl: (photoId: string, url: string) => void
   setReceiverInfo: (name: string, dept: string) => void
-  submitAcceptance: (status: 'passed' | 'rejected', conclusion: string) => boolean
+  submitAcceptance: (status: 'passed' | 'rejected', conclusion: string, receiverName?: string, receiverDept?: string) => { success: boolean; message: string }
   resetAcceptance: () => void
   getAcceptanceById: (id: string) => AcceptanceRecord | undefined
 }
@@ -45,13 +45,20 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
 
   setScanned: (scanned) => set({ scanned }),
 
-  scanWaybill: () => {
-    console.log('[VaccineStore] scanWaybill called')
+  scanWaybill: (waybillNo) => {
+    if (!waybillNo) {
+      console.warn('[VaccineStore] scanWaybill: waybillNo is empty, ignored')
+      return
+    }
+    console.log('[VaccineStore] scanWaybill called with:', waybillNo)
     set({
       scanned: true,
-      shipmentInfo: mockShipmentInfo,
+      shipmentInfo: { ...mockShipmentInfo, waybillNo },
       tracePoints: mockTracePoints,
-      checkResults: {}
+      checkResults: {},
+      photoItems: mockPhotoItems.map((item) => ({ ...item, imageUrl: undefined })),
+      receiverName: '',
+      receiverDept: ''
     })
   },
 
@@ -79,13 +86,29 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     })
   },
 
-  submitAcceptance: (status, conclusion) => {
+  submitAcceptance: (status, conclusion, receiverNameInput, receiverDeptInput) => {
     const state = get()
-    const { shipmentInfo, checkItems, checkResults, photoItems, receiverName, receiverDept } = state
+    const { shipmentInfo, checkItems, checkResults, photoItems } = state
 
     if (!shipmentInfo) {
       console.error('[VaccineStore] submitAcceptance: no shipment info')
-      return false
+      return { success: false, message: '请先扫描运单' }
+    }
+
+    const finalReceiverName = (receiverNameInput || '').trim()
+    const finalReceiverDept = (receiverDeptInput || '').trim()
+
+    if (!finalReceiverName) {
+      console.error('[VaccineStore] submitAcceptance: receiverName is empty')
+      return { success: false, message: '请填写签收人姓名' }
+    }
+
+    const requiredPhotoItems = photoItems.filter((item) => item.required)
+    const allPhotosUploaded = requiredPhotoItems.every((item) => item.imageUrl)
+    if (!allPhotosUploaded) {
+      const missing = requiredPhotoItems.filter((item) => !item.imageUrl).map((item) => item.label)
+      console.error('[VaccineStore] submitAcceptance: missing photos:', missing)
+      return { success: false, message: `请补齐照片：${missing.join('、')}` }
     }
 
     const allRequiredChecked = checkItems
@@ -94,7 +117,22 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
 
     if (!allRequiredChecked) {
       console.error('[VaccineStore] submitAcceptance: required check items not completed')
-      return false
+      return { success: false, message: '请完成所有验收项的勾选' }
+    }
+
+    if (status === 'passed') {
+      const allPassed = checkItems
+        .filter((item) => item.required)
+        .every((item) => checkResults[item.id] === true)
+      if (!allPassed) {
+        console.error('[VaccineStore] submitAcceptance: cannot pass with failed items')
+        return { success: false, message: '存在不合格项，无法签收合格，请选择验收不合格' }
+      }
+    }
+
+    if (status === 'rejected' && !conclusion.trim()) {
+      console.error('[VaccineStore] submitAcceptance: rejected without conclusion')
+      return { success: false, message: '请填写异常说明' }
     }
 
     const now = new Date().toISOString().replace('T', ' ').substring(0, 19)
@@ -105,24 +143,26 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
       vaccineName: shipmentInfo.vaccineName,
       quantity: shipmentInfo.quantity,
       arrivalTime: shipmentInfo.actualArrival,
-      receiverName: receiverName || '当前用户',
-      receiverDept: receiverDept || '预防接种门诊',
+      receiverName: finalReceiverName,
+      receiverDept: finalReceiverDept || '预防接种门诊',
       checkResults: Object.entries(checkResults).map(([itemId, passed]) => ({ itemId, passed })),
       photos: photoItems
         .filter((item) => item.imageUrl)
         .map((item) => ({ label: item.label, url: item.imageUrl! })),
-      abnormalConclusion: conclusion,
+      abnormalConclusion: conclusion.trim() || '验收合格，无异常情况。',
       status,
       signTime: now
     }
 
-    set((state) => ({
+    set((s) => ({
       acceptanceRecord: record,
-      acceptanceHistory: [record, ...state.acceptanceHistory]
+      acceptanceHistory: [record, ...s.acceptanceHistory],
+      receiverName: finalReceiverName,
+      receiverDept: finalReceiverDept
     }))
 
-    console.log('[VaccineStore] submitAcceptance success:', record.id)
-    return true
+    console.log('[VaccineStore] submitAcceptance success:', record.id, record.receiverName)
+    return { success: true, message: '' }
   },
 
   resetAcceptance: () => {

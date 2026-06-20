@@ -4,7 +4,6 @@ import Taro from '@tarojs/taro'
 import classnames from 'classnames'
 import { useVaccineStore } from '@/store/vaccineStore'
 import Timeline from '@/components/Timeline'
-import { mockShipmentInfo, mockTracePoints } from '@/data/mockVaccine'
 import dayjs from 'dayjs'
 import styles from './index.module.scss'
 
@@ -12,17 +11,19 @@ const TracePage: React.FC = () => {
   const { tracePoints, shipmentInfo, scanned } = useVaccineStore()
   const [filter, setFilter] = useState<'all' | 'abnormal'>('all')
 
+  const hasData = scanned && shipmentInfo && tracePoints.length > 0
+
   const displayPoints = useMemo(() => {
-    const points = tracePoints.length > 0 ? tracePoints : mockTracePoints
+    if (!hasData) return []
     if (filter === 'abnormal') {
-      return points.filter(
+      return tracePoints.filter(
         (p) => p.type === 'door_open' || p.type === 'temperature_abnormal'
       )
     }
-    return points
-  }, [tracePoints, filter])
+    return tracePoints
+  }, [tracePoints, filter, hasData])
 
-  const displayShipment = shipmentInfo || mockShipmentInfo
+  const displayShipment = shipmentInfo
 
   const handleScan = async () => {
     try {
@@ -50,18 +51,33 @@ const TracePage: React.FC = () => {
   ).length
 
   const tempBars = useMemo(() => {
-    const points = tracePoints.length > 0 ? tracePoints : mockTracePoints
-    const temps = points.map((p) => p.temperature)
+    if (!hasData) return []
+    const temps = tracePoints.map((p) => p.temperature)
     const min = Math.min(...temps) - 1
     const max = Math.max(...temps) + 1
     const range = max - min || 1
-    return points.map((p) => ({
+    return tracePoints.map((p) => ({
       height: ((p.temperature - min) / range) * 100,
       isAbnormal: p.type === 'temperature_abnormal',
       isWarning: p.type === 'door_open',
       time: p.time.slice(11, 16)
     }))
-  }, [tracePoints])
+  }, [tracePoints, hasData])
+
+  if (!hasData || !displayShipment) {
+    return (
+      <View className={styles.page}>
+        <View className={styles.emptyBox} style={{ marginTop: 120 }}>
+          <View className={styles.emptyIcon}>📷</View>
+          <View className={styles.emptyText}>请先扫描运单码</View>
+          <View className={styles.emptyHint}>扫描箱码或运单码后查看运输轨迹</View>
+          <View className={styles.scanBtn} onClick={handleScan}>
+            去扫码
+          </View>
+        </View>
+      </View>
+    )
+  }
 
   return (
     <View className={styles.page}>
@@ -174,17 +190,6 @@ const TracePage: React.FC = () => {
           <View className={styles.emptyIcon}>📭</View>
           <View className={styles.emptyText}>暂无异常记录</View>
           <View className={styles.emptyHint}>运输过程全程正常，请放心验收</View>
-        </View>
-      )}
-
-      {!scanned && tracePoints.length === 0 && (
-        <View className={styles.emptyBox}>
-          <View className={styles.emptyIcon}>📷</View>
-          <View className={styles.emptyText}>请先扫描运单码</View>
-          <View className={styles.emptyHint}>扫描箱码或运单码后查看运输轨迹</View>
-          <View className={styles.scanBtn} onClick={handleScan}>
-            去扫码
-          </View>
         </View>
       )}
     </View>

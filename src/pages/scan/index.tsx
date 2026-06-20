@@ -16,10 +16,11 @@ const ScanPage: React.FC = () => {
         scanType: ['qrCode', 'barCode']
       })
       console.log('[ScanPage] scan result:', res.result)
-      scanWaybill(res.result)
+      if (res.result && res.result.trim()) {
+        scanWaybill(res.result.trim())
+      }
     } catch (err) {
       console.log('[ScanPage] scan cancelled or failed:', err)
-      scanWaybill()
     }
   }
 
