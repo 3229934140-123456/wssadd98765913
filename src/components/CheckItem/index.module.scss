@@ -11,43 +11,9 @@
   }
 }
 
-.checkbox {
-  width: 40rpx;
-  height: 40rpx;
-  border-radius: $radius-xs;
-  border: 2rpx solid $color-border;
-  flex-shrink: 0;
-  margin-top: 4rpx;
-  margin-right: $spacing-md;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all $transition-fast;
-
-  &.checked {
-    background: $color-primary;
-    border-color: $color-primary;
-
-    .checkIcon {
-      opacity: 1;
-      transform: scale(1);
-    }
-  }
-}
-
-.checkIcon {
-  width: 24rpx;
-  height: 24rpx;
-  border-left: 4rpx solid #fff;
-  border-bottom: 4rpx solid #fff;
-  transform: rotate(-45deg) scale(0.6);
-  opacity: 0;
-  transition: all $transition-fast;
-  margin-top: -4rpx;
-}
-
 .checkContent {
   flex: 1;
+  margin-bottom: $spacing-sm;
 }
 
 .checkLabel {
@@ -68,4 +34,48 @@
   font-size: $font-size-sm;
   color: $color-text-tertiary;
   line-height: 1.4;
+  margin-bottom: $spacing-md;
+}
+
+.optionRow {
+  display: flex;
+  gap: $spacing-md;
+}
+
+.optionBtn {
+  @include button-reset;
+  flex: 1;
+  height: 64rpx;
+  border-radius: $radius-button;
+  border: 2rpx solid $color-border;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  font-size: $font-size-sm;
+  transition: all $transition-fast;
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.optionPass {
+  &.active {
+    background: $color-success-bg;
+    border-color: $color-success;
+    color: $color-success;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.optionFail {
+  &.active {
+    background: $color-error-bg;
+    border-color: $color-error;
+    color: $color-error;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.optionIcon {
+  margin-right: 8rpx;
 }

@@ -7,32 +7,45 @@ interface CheckItemProps {
   label: string
   description: string
   required?: boolean
-  checked: boolean
-  onChange: (checked: boolean) => void
+  value: boolean | null
+  onChange: (value: boolean) => void
 }
 
 const CheckItem: React.FC<CheckItemProps> = ({
   label,
   description,
   required = false,
-  checked,
+  value,
   onChange
 }) => {
-  const handleClick = () => {
-    onChange(!checked)
-  }
-
   return (
-    <View className={styles.checkItem} onClick={handleClick}>
-      <View className={classnames(styles.checkbox, { [styles.checked]: checked })}>
-        <View className={styles.checkIcon} />
-      </View>
+    <View className={styles.checkItem}>
       <View className={styles.checkContent}>
         <View className={styles.checkLabel}>
           {required && <Text className={styles.requiredTag}>*</Text>}
           {label}
         </View>
         <Text className={styles.checkDesc}>{description}</Text>
+        <View className={styles.optionRow}>
+          <View
+            className={classnames(styles.optionBtn, styles.optionPass, {
+              [styles.active]: value === true
+            })}
+            onClick={() => onChange(true)}
+          >
+            <Text className={styles.optionIcon}>✓</Text>
+            <Text>合格</Text>
+          </View>
+          <View
+            className={classnames(styles.optionBtn, styles.optionFail, {
+              [styles.active]: value === false
+            })}
+            onClick={() => onChange(false)}
+          >
+            <Text className={styles.optionIcon}>✕</Text>
+            <Text>不合格</Text>
+          </View>
+        </View>
       </View>
     </View>
   )

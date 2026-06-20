@@ -8,10 +8,10 @@ import dayjs from 'dayjs'
 import styles from './index.module.scss'
 
 const TracePage: React.FC = () => {
-  const { tracePoints, shipmentInfo, scanned } = useVaccineStore()
+  const { tracePoints, shipmentInfo, pendingRecord } = useVaccineStore()
   const [filter, setFilter] = useState<'all' | 'abnormal'>('all')
 
-  const hasData = scanned && shipmentInfo && tracePoints.length > 0
+  const hasData = !!pendingRecord && !!shipmentInfo && tracePoints.length > 0
 
   const displayPoints = useMemo(() => {
     if (!hasData) return []

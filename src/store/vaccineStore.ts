@@ -5,93 +5,149 @@ import {
   mockTracePoints,
   mockCheckItems,
   mockPhotoItems,
-  mockAcceptanceRecord,
   mockAcceptanceHistory
 } from '@/data/mockVaccine'
 
 interface VaccineStore {
-  scanned: boolean
+  checkItems: CheckItem[]
+  pendingRecord: AcceptanceRecord | null
   shipmentInfo: ShipmentInfo | null
   tracePoints: TracePoint[]
-  checkItems: CheckItem[]
-  photoItems: PhotoItem[]
-  checkResults: Record<string, boolean>
   acceptanceRecord: AcceptanceRecord | null
   acceptanceHistory: AcceptanceRecord[]
-  receiverName: string
-  receiverDept: string
 
-  setScanned: (scanned: boolean) => void
-  scanWaybill: (waybillNo?: string) => void
+  scanWaybill: (waybillNo: string) => void
   setCheckResult: (itemId: string, passed: boolean) => void
   setPhotoUrl: (photoId: string, url: string) => void
-  setReceiverInfo: (name: string, dept: string) => void
-  submitAcceptance: (status: 'passed' | 'rejected', conclusion: string, receiverName?: string, receiverDept?: string) => { success: boolean; message: string }
+  submitAcceptance: (
+    status: 'passed' | 'rejected',
+    conclusion: string,
+    receiverName: string,
+    receiverDept: string
+  ) => { success: boolean; message: string }
   resetAcceptance: () => void
   getAcceptanceById: (id: string) => AcceptanceRecord | undefined
+  getCheckItemLabels: () => { id: string; label: string }[]
+}
+
+const createEmptyCheckResults = (): Record<string, boolean | null> => {
+  const result: Record<string, boolean | null> = {}
+  mockCheckItems.forEach((item) => {
+    result[item.id] = null
+  })
+  return result
+}
+
+const createEmptyPhotoItems = (): PhotoItem[] => {
+  return mockPhotoItems.map((item) => ({ ...item, imageUrl: undefined }))
 }
 
 export const useVaccineStore = create<VaccineStore>((set, get) => ({
-  scanned: false,
+  checkItems: mockCheckItems,
+  pendingRecord: null,
   shipmentInfo: null,
   tracePoints: [],
-  checkItems: mockCheckItems,
-  photoItems: mockPhotoItems,
-  checkResults: {},
   acceptanceRecord: null,
   acceptanceHistory: mockAcceptanceHistory,
-  receiverName: '',
-  receiverDept: '',
-
-  setScanned: (scanned) => set({ scanned }),
 
   scanWaybill: (waybillNo) => {
-    if (!waybillNo) {
+    if (!waybillNo || !waybillNo.trim()) {
       console.warn('[VaccineStore] scanWaybill: waybillNo is empty, ignored')
       return
     }
-    console.log('[VaccineStore] scanWaybill called with:', waybillNo)
-    set({
-      scanned: true,
-      shipmentInfo: { ...mockShipmentInfo, waybillNo },
-      tracePoints: mockTracePoints,
-      checkResults: {},
-      photoItems: mockPhotoItems.map((item) => ({ ...item, imageUrl: undefined })),
+
+    const existingPending = get().pendingRecord
+    if (existingPending && existingPending.waybillNo === waybillNo.trim()) {
+      console.log('[VaccineStore] scanWaybill: continue existing pending record')
+      return
+    }
+
+    console.log('[VaccineStore] scanWaybill creating new pending:', waybillNo)
+
+    const pending: AcceptanceRecord = {
+      id: `pending_${Date.now()}`,
+      waybillNo: waybillNo.trim(),
+      batchNo: mockShipmentInfo.batchNo,
+      vaccineName: mockShipmentInfo.vaccineName,
+      quantity: mockShipmentInfo.quantity,
+      arrivalTime: mockShipmentInfo.actualArrival,
       receiverName: '',
-      receiverDept: ''
+      receiverDept: '',
+      checkResults: [],
+      photos: [],
+      abnormalConclusion: '',
+      status: 'pending',
+      signTime: ''
+    }
+
+    set({
+      pendingRecord: pending,
+      shipmentInfo: { ...mockShipmentInfo, waybillNo: waybillNo.trim() },
+      tracePoints: mockTracePoints,
+      acceptanceRecord: null
     })
   },
 
   setCheckResult: (itemId, passed) => {
-    set((state) => ({
-      checkResults: {
-        ...state.checkResults,
-        [itemId]: passed
+    set((state) => {
+      if (!state.pendingRecord) return state
+
+      const currentResults = state.pendingRecord.checkResults
+      const existingIdx = currentResults.findIndex((r) => r.itemId === itemId)
+      let newResults
+
+      if (existingIdx >= 0) {
+        newResults = [...currentResults]
+        newResults[existingIdx] = { itemId, passed }
+      } else {
+        newResults = [...currentResults, { itemId, passed }]
       }
-    }))
+
+      return {
+        pendingRecord: {
+          ...state.pendingRecord,
+          checkResults: newResults
+        }
+      }
+    })
   },
 
   setPhotoUrl: (photoId, url) => {
-    set((state) => ({
-      photoItems: state.photoItems.map((item) =>
-        item.id === photoId ? { ...item, imageUrl: url } : item
-      )
-    }))
-  },
+    set((state) => {
+      if (!state.pendingRecord) return state
 
-  setReceiverInfo: (name, dept) => {
-    set({
-      receiverName: name,
-      receiverDept: dept
+      const photoLabel = mockPhotoItems.find((p) => p.id === photoId)?.label || photoId
+      const currentPhotos = state.pendingRecord.photos
+      const existingIdx = currentPhotos.findIndex((p) => p.label === photoLabel)
+      let newPhotos
+
+      if (existingIdx >= 0) {
+        newPhotos = [...currentPhotos]
+        if (url) {
+          newPhotos[existingIdx] = { label: photoLabel, url }
+        } else {
+          newPhotos.splice(existingIdx, 1)
+        }
+      } else if (url) {
+        newPhotos = [...currentPhotos, { label: photoLabel, url }]
+      } else {
+        newPhotos = currentPhotos
+      }
+
+      return {
+        pendingRecord: {
+          ...state.pendingRecord,
+          photos: newPhotos
+        }
+      }
     })
   },
 
   submitAcceptance: (status, conclusion, receiverNameInput, receiverDeptInput) => {
     const state = get()
-    const { shipmentInfo, checkItems, checkResults, photoItems } = state
+    const { pendingRecord, shipmentInfo } = state
 
-    if (!shipmentInfo) {
-      console.error('[VaccineStore] submitAcceptance: no shipment info')
+    if (!pendingRecord || !shipmentInfo) {
       return { success: false, message: '请先扫描运单' }
     }
 
@@ -99,44 +155,51 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     const finalReceiverDept = (receiverDeptInput || '').trim()
 
     if (!finalReceiverName) {
-      console.error('[VaccineStore] submitAcceptance: receiverName is empty')
       return { success: false, message: '请填写签收人姓名' }
     }
+
+    const photoItems = createEmptyPhotoItems()
+    photoItems.forEach((item) => {
+      const uploaded = pendingRecord.photos.find((p) => p.label === item.label)
+      if (uploaded) {
+        item.imageUrl = uploaded.url
+      }
+    })
 
     const requiredPhotoItems = photoItems.filter((item) => item.required)
     const allPhotosUploaded = requiredPhotoItems.every((item) => item.imageUrl)
     if (!allPhotosUploaded) {
       const missing = requiredPhotoItems.filter((item) => !item.imageUrl).map((item) => item.label)
-      console.error('[VaccineStore] submitAcceptance: missing photos:', missing)
       return { success: false, message: `请补齐照片：${missing.join('、')}` }
     }
 
-    const allRequiredChecked = checkItems
+    const checkResults = pendingRecord.checkResults
+    const allRequiredChecked = mockCheckItems
       .filter((item) => item.required)
-      .every((item) => checkResults[item.id] !== undefined)
+      .every((item) => checkResults.some((r) => r.itemId === item.id))
 
     if (!allRequiredChecked) {
-      console.error('[VaccineStore] submitAcceptance: required check items not completed')
-      return { success: false, message: '请完成所有验收项的勾选' }
+      return { success: false, message: '请完成所有验收项的合格/不合格选择' }
     }
 
     if (status === 'passed') {
-      const allPassed = checkItems
+      const allPassed = mockCheckItems
         .filter((item) => item.required)
-        .every((item) => checkResults[item.id] === true)
+        .every((item) => {
+          const result = checkResults.find((r) => r.itemId === item.id)
+          return result?.passed === true
+        })
       if (!allPassed) {
-        console.error('[VaccineStore] submitAcceptance: cannot pass with failed items')
         return { success: false, message: '存在不合格项，无法签收合格，请选择验收不合格' }
       }
     }
 
     if (status === 'rejected' && !conclusion.trim()) {
-      console.error('[VaccineStore] submitAcceptance: rejected without conclusion')
       return { success: false, message: '请填写异常说明' }
     }
 
     const now = new Date().toISOString().replace('T', ' ').substring(0, 19)
-    const record: AcceptanceRecord = {
+    const finalRecord: AcceptanceRecord = {
       id: `acc${Date.now()}`,
       waybillNo: shipmentInfo.waybillNo,
       batchNo: shipmentInfo.batchNo,
@@ -145,7 +208,7 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
       arrivalTime: shipmentInfo.actualArrival,
       receiverName: finalReceiverName,
       receiverDept: finalReceiverDept || '预防接种门诊',
-      checkResults: Object.entries(checkResults).map(([itemId, passed]) => ({ itemId, passed })),
+      checkResults: checkResults,
       photos: photoItems
         .filter((item) => item.imageUrl)
         .map((item) => ({ label: item.label, url: item.imageUrl! })),
@@ -155,30 +218,33 @@ export const useVaccineStore = create<VaccineStore>((set, get) => ({
     }
 
     set((s) => ({
-      acceptanceRecord: record,
-      acceptanceHistory: [record, ...s.acceptanceHistory],
-      receiverName: finalReceiverName,
-      receiverDept: finalReceiverDept
+      acceptanceRecord: finalRecord,
+      acceptanceHistory: [finalRecord, ...s.acceptanceHistory],
+      pendingRecord: null,
+      shipmentInfo: null,
+      tracePoints: []
     }))
 
-    console.log('[VaccineStore] submitAcceptance success:', record.id, record.receiverName)
+    console.log('[VaccineStore] submitAcceptance success:', finalRecord.id, finalRecord.receiverName, finalRecord.receiverDept)
     return { success: true, message: '' }
   },
 
   resetAcceptance: () => {
     set({
-      scanned: false,
+      pendingRecord: null,
       shipmentInfo: null,
       tracePoints: [],
-      checkResults: {},
-      acceptanceRecord: null,
-      photoItems: mockPhotoItems.map((item) => ({ ...item, imageUrl: undefined })),
-      receiverName: '',
-      receiverDept: ''
+      acceptanceRecord: null
     })
   },
 
   getAcceptanceById: (id) => {
     return get().acceptanceHistory.find((item) => item.id === id)
+  },
+
+  getCheckItemLabels: () => {
+    return mockCheckItems.map((item) => ({ id: item.id, label: item.label }))
   }
 }))
+
+export { createEmptyCheckResults, createEmptyPhotoItems }

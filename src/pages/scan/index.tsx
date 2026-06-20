@@ -7,7 +7,8 @@ import { mockAcceptanceHistory } from '@/data/mockVaccine'
 import styles from './index.module.scss'
 
 const ScanPage: React.FC = () => {
-  const { scanned, shipmentInfo, scanWaybill } = useVaccineStore()
+  const { pendingRecord, shipmentInfo, acceptanceHistory, scanWaybill } = useVaccineStore()
+  const hasPending = !!pendingRecord && !!shipmentInfo
 
   const handleScan = async () => {
     try {
@@ -65,8 +66,8 @@ const ScanPage: React.FC = () => {
         </View>
       </View>
 
-      <View className={`${styles.content} ${scanned ? styles.contentWithActionBar : ''}`}>
-        {scanned && shipmentInfo ? (
+      <View className={`${styles.content} ${hasPending ? styles.contentWithActionBar : ''}`}>
+        {hasPending ? (
           <>
             <Text className={styles.sectionTitle}>运单信息</Text>
             <StatusCard shipmentInfo={shipmentInfo} />
@@ -75,7 +76,7 @@ const ScanPage: React.FC = () => {
           <>
             <Text className={styles.sectionTitle}>最近验收</Text>
             <View className={styles.recentList}>
-              {mockAcceptanceHistory.slice(0, 3).map((item) => (
+              {acceptanceHistory.slice(0, 3).map((item) => (
                 <View
                   key={item.id}
                   className={styles.recentItem}
@@ -101,7 +102,7 @@ const ScanPage: React.FC = () => {
         )}
       </View>
 
-      {scanned && shipmentInfo && (
+      {hasPending && (
         <View className={styles.actionBar}>
           <View className={styles.btnSecondary} onClick={handleGoTrace}>
             查看轨迹

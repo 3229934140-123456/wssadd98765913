@@ -26,6 +26,10 @@
   }
 }
 
+.headerRejected {
+  background: linear-gradient(135deg, $color-error 0%, #ff7875 100%);
+}
+
 .headerTitle {
   font-size: $font-size-lg;
   font-weight: $font-weight-semibold;
@@ -132,11 +136,20 @@
   color: $color-text-secondary;
 }
 
+.resultFail {
+  font-weight: $font-weight-medium;
+  color: $color-error;
+}
+
 .conclusionBox {
   background: $color-primary-bg;
   border-radius: $radius-md;
   padding: $spacing-md;
   margin-top: $spacing-md;
+}
+
+.conclusionRejected {
+  background: $color-error-bg;
 }
 
 .conclusionTitle {
@@ -146,10 +159,56 @@
   margin-bottom: 8rpx;
 }
 
+.conclusionTitleRejected {
+  color: $color-error;
+}
+
 .conclusionText {
   font-size: $font-size-sm;
   color: $color-text-secondary;
   line-height: 1.6;
+}
+
+.photosSection {
+  margin-top: $spacing-md;
+}
+
+.photosTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-bottom: $spacing-sm;
+}
+
+.photosGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.photoItem {
+  width: 200rpx;
+  height: 200rpx;
+  border-radius: $radius-md;
+  overflow: hidden;
+  position: relative;
+}
+
+.photoImage {
+  width: 100%;
+  height: 100%;
+}
+
+.photoLabel {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 6rpx 8rpx;
+  background: rgba(0, 0, 0, 0.5);
+  color: #fff;
+  font-size: 20rpx;
+  text-align: center;
 }
 
 .cardFooter {
