@@ -10,6 +10,23 @@ const ScanPage: React.FC = () => {
   const { pendingRecord, shipmentInfo, acceptanceHistory, scanWaybill } = useVaccineStore()
   const hasPending = !!pendingRecord && !!shipmentInfo
 
+  const getFirstBatchInfo = (record: any) => {
+    if (!record?.vaccineBatches || record.vaccineBatches.length === 0) {
+      return { name: '-', batchNo: '-', total: 0, count: 0 }
+    }
+    const first = record.vaccineBatches[0]
+    const total = record.vaccineBatches.reduce(
+      (sum: number, b: any) => sum + (b.actualQuantity || b.expectedQuantity || 0),
+      0
+    )
+    return {
+      name: first.vaccineName,
+      batchNo: first.batchNo,
+      total,
+      count: record.vaccineBatches.length
+    }
+  }
+
   const handleScan = async () => {
     try {
       const res = await Taro.scanCode({
@@ -76,27 +93,35 @@ const ScanPage: React.FC = () => {
           <>
             <Text className={styles.sectionTitle}>最近验收</Text>
             <View className={styles.recentList}>
-              {acceptanceHistory.slice(0, 3).map((item) => (
-                <View
-                  key={item.id}
-                  className={styles.recentItem}
-                  onClick={handleViewRecord}
-                >
-                  <View className={styles.recentInfo}>
-                    <View className={styles.recentTitle}>{item.vaccineName}</View>
-                    <View className={styles.recentSub}>
-                      批号：{item.batchNo} · {item.arrivalTime.slice(5, 16)}
+              {acceptanceHistory.slice(0, 3).map((item) => {
+                const info = getFirstBatchInfo(item)
+                return (
+                  <View
+                    key={item.id}
+                    className={styles.recentItem}
+                    onClick={handleViewRecord}
+                  >
+                    <View className={styles.recentInfo}>
+                      <View className={styles.recentTitle}>
+                        {info.name}
+                        {info.count > 1 && ` 等${info.count}种`}
+                      </View>
+                      <View className={styles.recentSub}>
+                        批号：{info.batchNo} · {item.arrivalTime.slice(5, 16)}
+                      </View>
+                    </View>
+                    <View
+                      className={`${styles.recentStatus} ${
+                        item.status === 'passed'
+                          ? styles.statusPassed
+                          : styles.statusRejected
+                      }`}
+                    >
+                      {item.status === 'passed' ? '已验收' : '验收不合格'}
                     </View>
                   </View>
-                  <View
-                    className={`${styles.recentStatus} ${
-                      item.status === 'passed' ? '' : styles.statusWarning
-                    }`}
-                  >
-                    {item.status === 'passed' ? '已验收' : '待处理'}
-                  </View>
-                </View>
-              ))}
+                )
+              })}
             </View>
           </>
         )}

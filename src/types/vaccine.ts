@@ -1,10 +1,5 @@
 export interface ShipmentInfo {
   waybillNo: string
-  batchNo: string
-  vaccineName: string
-  vaccineType: string
-  quantity: number
-  spec: string
   originWarehouse: string
   destinationClinic: string
   carrier: string
@@ -20,6 +15,27 @@ export interface ShipmentInfo {
   hasDoorOpen: boolean
   doorOpenCount: number
   status: 'normal' | 'warning' | 'error'
+}
+
+export interface VaccineBatch {
+  id: string
+  batchNo: string
+  vaccineName: string
+  vaccineType: string
+  spec: string
+  expectedQuantity: number
+  actualQuantity?: number
+  quantityPassed?: boolean | null
+  batchRemark?: string
+}
+
+export interface TraceSummary {
+  totalDuration: string
+  totalPoints: number
+  abnormalCount: number
+  doorOpenCount: number
+  temperatureRange: string
+  routeText: string
 }
 
 export interface TracePoint {
@@ -51,9 +67,7 @@ export interface PhotoItem {
 export interface AcceptanceRecord {
   id: string
   waybillNo: string
-  batchNo: string
-  vaccineName: string
-  quantity: number
+  vaccineBatches: VaccineBatch[]
   arrivalTime: string
   receiverName: string
   receiverDept: string
@@ -62,4 +76,5 @@ export interface AcceptanceRecord {
   abnormalConclusion: string
   status: 'passed' | 'rejected' | 'pending'
   signTime: string
+  traceSummary?: TraceSummary
 }

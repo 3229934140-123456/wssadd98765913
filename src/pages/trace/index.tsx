@@ -8,7 +8,7 @@ import dayjs from 'dayjs'
 import styles from './index.module.scss'
 
 const TracePage: React.FC = () => {
-  const { tracePoints, shipmentInfo, pendingRecord } = useVaccineStore()
+  const { tracePoints, shipmentInfo, pendingRecord, scanWaybillDirect } = useVaccineStore()
   const [filter, setFilter] = useState<'all' | 'abnormal'>('all')
 
   const hasData = !!pendingRecord && !!shipmentInfo && tracePoints.length > 0
@@ -27,11 +27,16 @@ const TracePage: React.FC = () => {
 
   const handleScan = async () => {
     try {
-      await Taro.scanCode({
+      const res = await Taro.scanCode({
         onlyFromCamera: false,
         scanType: ['qrCode', 'barCode']
       })
-      Taro.switchTab({ url: '/pages/scan/index' })
+      if (res.result && res.result.trim()) {
+        const result = scanWaybillDirect(res.result.trim())
+        if (result.success) {
+          console.log('[TracePage] 扫码已直接衔接运单')
+        }
+      }
     } catch (err) {
       console.log('[TracePage] scan cancelled')
     }

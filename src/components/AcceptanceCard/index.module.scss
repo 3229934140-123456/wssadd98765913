@@ -52,6 +52,37 @@
   background: rgba(255, 255, 255, 0.2);
 }
 
+.actionRow {
+  display: flex;
+  gap: $spacing-sm;
+  padding: $spacing-md $spacing-lg;
+  padding-top: $spacing-xl;
+  border-bottom: 1rpx solid $color-divider;
+}
+
+.actionBtn {
+  @include button-reset;
+  flex: 1;
+  height: 64rpx;
+  border-radius: $radius-md;
+  background: $color-primary-bg;
+  color: $color-primary;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6rpx;
+
+  &:active {
+    opacity: 0.85;
+  }
+}
+
+.actionIcon {
+  font-size: $font-size-md;
+}
+
 .cardBody {
   padding: $spacing-lg;
 }
@@ -86,6 +117,19 @@
   color: $color-text-primary;
   font-weight: $font-weight-medium;
   @include text-ellipsis;
+  display: flex;
+  align-items: center;
+}
+
+.multiBatchTag {
+  font-size: 20rpx;
+  color: $color-primary;
+  background: $color-primary-bg;
+  padding: 2rpx 10rpx;
+  border-radius: $radius-round;
+  margin-left: $spacing-xs;
+  flex-shrink: 0;
+  font-weight: $font-weight-regular;
 }
 
 .divider {
@@ -99,6 +143,175 @@
   font-weight: $font-weight-semibold;
   color: $color-text-primary;
   margin-bottom: $spacing-sm;
+  display: flex;
+  align-items: center;
+}
+
+.sectionTitleIcon {
+  margin-right: 8rpx;
+  font-size: $font-size-md;
+}
+
+.batchCountTag {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  font-weight: $font-weight-regular;
+  margin-left: $spacing-xs;
+}
+
+.traceSummaryBox {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+}
+
+.traceRoute {
+  padding-bottom: $spacing-sm;
+  margin-bottom: $spacing-sm;
+  border-bottom: 1rpx dashed $color-divider;
+}
+
+.traceRouteText {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+  line-height: 1.5;
+}
+
+.traceStatsRow {
+  display: flex;
+  gap: $spacing-sm;
+}
+
+.traceStatItem {
+  flex: 1;
+  text-align: center;
+}
+
+.traceStatValue {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  line-height: 1.3;
+}
+
+.traceStatWarn {
+  color: $color-warning;
+}
+
+.traceStatLabel {
+  font-size: $font-size-xs;
+  color: $color-text-tertiary;
+  margin-top: 4rpx;
+}
+
+.batchList {
+  margin: 0 -$spacing-sm;
+}
+
+.batchItem {
+  background: $color-bg-page;
+  border-radius: $radius-md;
+  padding: $spacing-md;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.batchItemHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.batchItemName {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+  flex: 1;
+  margin-right: $spacing-sm;
+}
+
+.batchItemStatus {
+  font-size: $font-size-xs;
+  padding: 2rpx 12rpx;
+  border-radius: $radius-round;
+  background: $color-bg-hover;
+  color: $color-text-tertiary;
+  flex-shrink: 0;
+}
+
+.batchItemStatusPass {
+  background: $color-success-bg;
+  color: $color-success;
+}
+
+.batchItemStatusFail {
+  background: $color-error-bg;
+  color: $color-error;
+}
+
+.batchItemStatusPending {
+  background: $color-warning-bg;
+  color: $color-warning;
+}
+
+.batchItemRow {
+  font-size: $font-size-xs;
+  margin-bottom: 4rpx;
+  line-height: 1.6;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.batchItemLabel {
+  color: $color-text-tertiary;
+}
+
+.batchItemValue {
+  color: $color-text-secondary;
+  font-weight: $font-weight-medium;
+}
+
+.batchQtyDiff {
+  color: $color-warning;
+  font-weight: $font-weight-semibold;
+}
+
+.batchQtyDiffTag {
+  font-size: 20rpx;
+  padding: 0 8rpx;
+  border-radius: $radius-round;
+  background: $color-warning-bg;
+  color: $color-warning;
+  margin-left: $spacing-xs;
+}
+
+.diffNeg {
+  background: $color-error-bg;
+  color: $color-error;
+}
+
+.batchRemarkBox {
+  margin-top: $spacing-sm;
+  padding: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-sm;
+  font-size: $font-size-xs;
+  line-height: 1.5;
+}
+
+.batchRemarkLabel {
+  color: $color-text-tertiary;
+}
+
+.batchRemarkText {
+  color: $color-text-secondary;
 }
 
 .checkResultList {
@@ -141,6 +354,11 @@
   color: $color-error;
 }
 
+.noCheckHint {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
 .conclusionBox {
   background: $color-primary-bg;
   border-radius: $radius-md;
@@ -170,14 +388,7 @@
 }
 
 .photosSection {
-  margin-top: $spacing-md;
-}
-
-.photosTitle {
-  font-size: $font-size-md;
-  font-weight: $font-weight-semibold;
-  color: $color-text-primary;
-  margin-bottom: $spacing-sm;
+  margin-top: $spacing-sm;
 }
 
 .photosGrid {
@@ -197,6 +408,40 @@
 .photoImage {
   width: 100%;
   height: 100%;
+}
+
+.photoPlaceholder {
+  width: 100%;
+  height: 100%;
+  background: $color-bg-page;
+  border: 2rpx dashed $color-divider;
+  border-radius: $radius-md;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  &.photoPlaceholderClickable {
+    border-color: $color-primary;
+    background: $color-primary-bg;
+
+    &:active {
+      opacity: 0.7;
+    }
+  }
+}
+
+.placeholderIcon {
+  font-size: 48rpx;
+  opacity: 0.5;
+  margin-bottom: 8rpx;
+}
+
+.placeholderText {
+  font-size: 20rpx;
+  color: $color-text-tertiary;
+  margin-bottom: $spacing-sm;
 }
 
 .photoLabel {

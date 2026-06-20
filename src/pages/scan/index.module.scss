@@ -230,6 +230,16 @@
   color: $color-success;
 }
 
+.statusPassed {
+  background: $color-success-bg;
+  color: $color-success;
+}
+
+.statusRejected {
+  background: $color-error-bg;
+  color: $color-error;
+}
+
 .statusWarning {
   background: $color-warning-bg;
   color: $color-warning;
